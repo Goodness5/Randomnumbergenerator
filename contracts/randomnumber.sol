@@ -34,7 +34,7 @@ contract randomnumber {
     uint32 numvalue;
     uint32 callbackGasLimit;
 
-    uint256[] requestID;
+    uint256[] public requestID;
 
     
 
