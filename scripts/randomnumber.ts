@@ -7,6 +7,9 @@ async function main() {
   const random = await Random.deploy();
   await random.deployed();
 
+  const address = random.address;
+  console.log(`contract deployed at ${address}`);
+
   const randwords = await random.requestRandomWords();
   console.log(randwords);
 
