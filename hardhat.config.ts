@@ -12,11 +12,11 @@ const config: HardhatUserConfig = {
 
     hardhat: {
         
-      forking: {
-        enabled: true,
-        //@ts-ignore
-        url: process.env.MAINETURL,
-      }
+      // forking: {
+      //   enabled: true,
+      //   //@ts-ignore
+      //   url: process.env.MAINETURL,
+      // }
     },
       goerli: {
         url: process.env.GOERLI_RPC,
