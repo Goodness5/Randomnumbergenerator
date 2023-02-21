@@ -23,23 +23,30 @@ contract randomnumber {
 
     struct requeststatus {
         bool requestfulfilled;
-        uint256 no_of_request;
+        uint256[] randomvalue;
     }
 
-    mapping (address => requeststatus) Request;
+    mapping (uint256 => requeststatus) Request;
 
     // Counters.Counter private nonce;
     uint256 nonce;
+    uint16 requestConfirmations;
+    uint32 numvalue;
+    uint32 callbackGasLimit;
+
+    uint256[] requestID;
+
+    
 
 
-    constructor(uint64 subscriptionId) {
+    constructor() {
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         owner = msg.sender;
         s_subscriptionId = 10097;
         s_keyHash = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
-        uint32 callbackGasLimit = 40000;
-        uint16 requestConfirmations = 3;
-        uint32 numWords =  1;
+        callbackGasLimit = 40000;
+        requestConfirmations = 3;
+        numvalue =  1;
     }
 
     modifier onlyOwner() {
@@ -47,39 +54,38 @@ contract randomnumber {
         _;
     }
 
-    event RequestFulfilled(address indexed);
+    event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+    event RequestSent(uint256 requestId, uint256 numWords);
 
-    // This function is copied from VRFConsumerBase
+   
      function requestRandomWords()external onlyOwner returns (uint256 requestId){
         requestId = 
-        COORDINATOR.requestRandomWords(s_keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numWords );
+        COORDINATOR.requestRandomWords(s_keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numvalue );
         
-        s_requests[requestId] = RequestStatus({
-            randomWords: new uint256[](0),
-            exists: true,
-            fulfilled: false
+        Request[requestId] = requeststatus({
+            randomvalue: new uint256[](0),
+            requestfulfilled: false
         });
-        requestIds.push(requestId);
-        lastRequestId = requestId;
-        emit RequestSent(requestId, numWords);
+        requestID.push(requestId);
+        emit RequestSent(requestId, numvalue);
         return requestId;
     }
 
-    function fulfillRandomWords(
-        uint256 _requestId,
-        uint256[] memory _randomWords
-    ) internal override {
-        require(s_requests[_requestId].exists, "request not found");
-        s_requests[_requestId].fulfilled = true;
-        s_requests[_requestId].randomWords = _randomWords;
+    function fulfillRandomWords(uint256 _requestId,uint256[] memory _randomWords) internal {
+        // require(Request[_requestId].exists, "request not found");
+        Request[_requestId].requestfulfilled = true;
+        Request[_requestId].randomvalue = _randomWords;
+
         emit RequestFulfilled(_requestId, _randomWords);
     }
 
     function getRequestStatus(
         uint256 _requestId
     ) external view returns (bool fulfilled, uint256[] memory randomWords) {
-        require(s_requests[_requestId].exists, "request not found");
-        RequestStatus memory request = s_requests[_requestId];
-        return (request.fulfilled, request.randomWords);
+
+        // require(Request[_requestId].requestfulfilled, "request not found");
+
+        requeststatus memory request = Request[_requestId];
+        return (request.requestfulfilled, request.randomvalue);
     }
 }
